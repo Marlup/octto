@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-09-10
+
+### Security
+- Session servers now require a per-session token. The session URL carries a 192-bit CSPRNG token (`?token=…`) that every route requires — the page and the `/ws` upgrade alike — on top of the existing loopback bind and same-origin Host checks. Without the URL, a local process could previously read question configs (which can embed file contents) or submit answers impersonating the user, including approving the plan review (#55).
+- Websocket answer payloads are shape-validated against the real `Answer` union instead of an `unknown` cast (#55).
+- Rendered markdown now goes through DOMPurify before `innerHTML`, both CDN scripts are SRI-pinned (marked 15.0.12, DOMPurify 3.4.15), the UI falls back to escaped text when either fails to load, and the page is served with a Content-Security-Policy (#55).
+- `answer.emoji` is escaped before rendering (#55).
+
+### Fixed
+- `createStatePersistence`'s dead default now matches the `.octto` directory used everywhere else (#55).
+
+## [0.4.3] - 2026-09-10
+
+### Fixed
+- Deleting the opencode session mid-brainstorm now tears the brainstorm's session server down. `create_brainstorm` creates its browser session internally, and the `session.deleted` cleanup only tracked `start_session` output, so the leaked server kept serving its stale "waiting for questions" page and, on a pinned port, blocked the next brainstorm from binding (#58).
+- E2E specs no longer contaminate each other: closing a CDP session now closes the chromium tab too, instead of leaving a stale page the next spec's `waitForTarget` could latch onto, and a spec failing before its run completes still kills the opencode process in `afterAll` instead of leaking the pinned port (#58).
+
+## [0.4.2] - 2026-09-10
+
+### Added
+- End-to-end regression specs for issue #58: session end must not hang nor leave a zombie page, and deleting an opencode session mid-brainstorm must not leak the session server.
+
+### Changed
+- `@opencode-ai/plugin` moved from 1.18.15 to 1.18.29 (#59).
+- `eslint-plugin-unicorn` moved from 73.0.0 to 74.0.0 (#60).
+
 ## [0.4.1] - 2026-09-03
 
 ### Fixed
