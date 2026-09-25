@@ -1,3 +1,32 @@
+# Octto Portable (Codex-first prototype)
+
+This fork separates Octto's browser brainstorming from its original OpenCode agent plugin. A local MCP server owns the session, browser interaction, model calls, review, and optional plan save. A coding host only starts the session, checks status, and retrieves the user-approved plan. The host does not receive the browser's internal session ID or become the source of truth for the workflow.
+
+This is source-build software, not a published package. Codex is the first integration target; templates for Claude Code, Antigravity, Copilot, Kilo, and ZooCode are experimental and have not been exercised in those hosts. No live model-provider or host end-to-end run is claimed yet.
+
+## Run from source (PowerShell)
+
+Install [Bun](https://bun.com/docs/installation), then run from this repository:
+
+```powershell
+bun install
+bun run build
+$env:OCTTO_MODEL_PROVIDER = "openai"
+$env:OCTTO_MODEL = "<your-model-id>"
+$env:OPENAI_API_KEY = "<your-key>"
+bun dist/cli.js --print-config codex
+```
+
+Add the printed entry to your [Codex MCP configuration](https://developers.openai.com/learn/docs-mcp) and restart Codex. Keep the key in the environment or your normal secret manager, never in this repository. The generated entry uses `env_vars` to forward the variables above to the local server. For an OpenAI-compatible endpoint, set `OCTTO_MODEL_PROVIDER=compatible`, `OCTTO_MODEL_BASE_URL`, `OCTTO_MODEL`, and optionally `OCTTO_MODEL_API_KEY`. Compatibility means chat-completions wire format, not guaranteed model quality or JSON reliability.
+
+Ask Codex to call `octto_start` with `request` and an absolute `workspace_root`. Open the returned loopback URL, answer questions, review the plan, and explicitly choose whether to save it. Codex can poll `octto_status`, call `octto_retry` after a recoverable failure, and call `octto_get_plan` only after approval. `octto_cancel` closes the browser session without deleting its durable record. Saving writes one Markdown file under `docs/plans/` in the selected workspace; approval alone does not write a file or authorize implementation.
+
+The service uses its own model API credentials. It does not borrow the Codex, Claude, or other host's subscription, login, model, tool access, or context window. Sessions survive a server restart, but the browser URL changes and pending questions are re-opened when the host checks status. The current prototype does not restore the full visual answer history. Generated branch/probe questions use a six-type subset of the original fourteen UI inputs. See [architecture and limitations](docs/portable-architecture.md).
+
+The original OpenCode plugin source and tests remain in this repository for attribution and reference, but the portable package build targets only `src/portable/cli.ts`. The original plugin instructions below describe upstream behavior, not this fork's portable entry point.
+
+## Original OpenCode plugin (upstream documentation)
+
 # octto
 
 An interactive browser UI for AI brainstorming. Stop typing in terminals. Start clicking in browsers.
