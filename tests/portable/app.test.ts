@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -258,7 +258,7 @@ test("approval does not write a plan until the browser user chooses save", async
     () => app.status(started.session_id),
     (s) => Boolean(s.saved_path),
   );
-  expect(status.saved_path!.startsWith(join(root, "docs", "plans"))).toBe(true);
+  expect(status.saved_path!.startsWith(join(realpathSync(root), "docs", "plans"))).toBe(true);
   expect(readFileSync(status.saved_path!, "utf8")).toContain("# Approved plan");
 });
 
