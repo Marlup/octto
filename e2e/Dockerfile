@@ -54,7 +54,7 @@ COPY e2e/package.json ./e2e/package.json
 RUN cd e2e && bun install --ignore-scripts
 
 COPY . .
-RUN bun run build
+RUN bun run build:legacy
 
 ENV DISPLAY=:99 \
     CHROME_BIN=/usr/bin/chromium \
