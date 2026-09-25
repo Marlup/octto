@@ -24,7 +24,8 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { octtoPort, type StubHandle, startStub, waitUntil, writeOpencodeConfig } from "./harness";
+import { listTargets } from "./cdp";
+import { cdpPort, octtoPort, type StubHandle, startStub, waitUntil, writeOpencodeConfig } from "./harness";
 
 const PLUGIN_PATH = "/work/dist/index.js";
 const SCRIPT = join(import.meta.dir, "..", "scripts", "issue-58-leak.json");
@@ -163,10 +164,22 @@ describe("issue #58: deleting a session tears its brainstorm server down", () =>
     console.log("[issue-58:leak] serve is ready");
   }, 200_000);
 
-  afterAll(() => {
-    serve?.kill();
-    stub?.stop();
-    rmSync(home, { recursive: true, force: true });
+  afterAll(async () => {
+    // This spec opens two tabs in the shared Chromium instance. Closing the
+    // OpenCode server does not close those tabs, so the next spec can attach
+    // to a stale page on the same pinned Octto port.
+    try {
+      const targets = await listTargets(cdpPort());
+      for (const target of targets) {
+        if (target.type === "page" && target.url.startsWith(`http://localhost:${octtoPort()}/`)) {
+          await fetch(`http://127.0.0.1:${cdpPort()}/json/close/${target.id}`);
+        }
+      }
+    } finally {
+      serve?.kill();
+      stub?.stop();
+      rmSync(home, { recursive: true, force: true });
+    }
   });
 
   it("stops the stale server after the opencode session is deleted", async () => {
