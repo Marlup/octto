@@ -1,23 +1,17 @@
 {
-  "name": "octto",
-  "version": "0.4.5",
-  "description": "OpenCode plugin that turns rough ideas into designs through branch-based exploration",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "name": "octto-portable",
+  "version": "0.1.0-portable.0",
+  "description": "Host-neutral browser brainstorming service over MCP",
   "type": "module",
+  "bin": {
+    "octto-mcp": "./dist/cli.js"
+  },
   "files": [
     "dist"
   ],
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
   "scripts": {
-    "prepare": "lefthook install",
-    "build": "bun build src/index.ts --outdir dist --target bun --format esm && tsc --emitDeclarationOnly",
-    "clean": "rm -rf dist",
+    "build": "bun build src/portable/cli.ts --outdir dist --target bun --format esm",
+    "clean": "bun -e \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "bun run clean && bun run check && bun run build",
     "test": "bun test tests",
@@ -30,27 +24,29 @@
     "test:e2e": "docker build -f e2e/Dockerfile -t octto-e2e . && docker run --rm octto-e2e"
   },
   "keywords": [
-    "opencode",
-    "plugin",
+    "mcp",
     "octto",
     "brainstorm",
     "interactive",
     "ui"
   ],
-  "author": "vtemian",
+  "author": "vtemian and contributors",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/vtemian/octto.git"
+    "url": "https://github.com/Marlup/octto.git"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "1.18.31",
+    "@modelcontextprotocol/server": "^2.1.0",
     "valibot": "^1.2.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",
     "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/client": "^2.1.0",
+    "@opencode-ai/plugin": "1.18.31",
+    "@types/node": "^26.6.2",
     "bun-types": "latest",
     "eslint": "^10.0.3",
     "eslint-plugin-sonarjs": "^4.0.2",
